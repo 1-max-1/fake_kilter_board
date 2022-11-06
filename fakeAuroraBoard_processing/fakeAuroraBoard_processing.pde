@@ -11,21 +11,27 @@ boolean bootMessageReceived = false;
 DataDecoder decoder = new DataDecoder();
 
 void setup() {
-  size(760, 780);
+  size(700, 780);
+  drawCOMPorts();
+  decoder.loadLEDPositions(sketchPath() + "/../positions.txt");
+}
+
+void drawCOMPorts() {
   background(255);
   fill(0);
   
   textSize(14);
+  textAlign(LEFT);
+  
   ports = Serial.list();
   for (int i = 0; i < ports.length; i++) {
     text(String.valueOf(i) + ":  " + ports[i], 30, i * 25 + 70);
   }
+  text("r: Refresh port list", 30, ports.length * 25 + 70);
   
   textAlign(CENTER);
   textSize(21);
   text("Please select a serial port by pressing the corresponding number key:", width / 2, 30);
-  
-  decoder.loadLEDPositions(sketchPath() + "/../positions.txt");
 }
 
 void openPort(String port) {
@@ -42,7 +48,22 @@ void openPort(String port) {
 }
 
 void keyPressed() {
-  if (portSelected) return;
+  // If we are on the LED screen then only accept key presses on the 'q' kwy - in which case we close the port and go back to main COM port menu.
+  if (portSelected) {
+    if (key == 'q') {
+      myPort.stop();
+      portSelected = false;
+      bootMessageReceived = false;
+      drawCOMPorts();
+    }
+    return;
+  }
+  
+  // 'R' key is refresh COM ports
+  if (key == 'r') {
+    drawCOMPorts();
+    return;
+  }
   
   int index = 0;
   try {
@@ -62,10 +83,16 @@ void keyPressed() {
 
 void drawEmptyBackground() {
   background(255, 255, 255);
+  
+  textSize(14);
+  textAlign(LEFT);
+  fill(0);
+  text("Press 'q' to go back to COM port menu", 5, 13);
+  
   fill(255, 255, 255);
   for (int x = 0; x < 17; x++) {
     for (int y = 0; y < 19; y++) {
-      square(x * 40 + 30, 780 - (y * 40) - 40, 25);
+      square(x * 40 + 15, y * 40 + 25, 25);
     }
   }
 }
@@ -81,11 +108,14 @@ void draw() {
         drawEmptyBackground();
         break;
       }
+      // ESP32 will send a '4' just before it sends us the API level
       else if (myPort.read() == 4) {
         bootMessageReceived = true;
       }
     }
   }
+  
+  // If we have connected, then just wait until the decoder recevies all packets for a message, then draw the holds
   else {
     while (myPort.available() > 0) {
       decoder.newByteIn(myPort.read());

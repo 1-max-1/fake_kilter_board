@@ -20,14 +20,6 @@ public:
 	void onWrite(BLECharacteristic* pCharacteristic) {
 		if(pCharacteristic->getUUID().toString() == BLEUUID(DATA_TRANSFER_CHARACTERISTIC).toString()) {
 			Serial.write(pCharacteristic->getValue().c_str(), pCharacteristic->getValue().length());
-
-			// const char* data = pCharacteristic->getValue().c_str();
-			// for (int i = 0; i < pCharacteristic->getValue().length(); i++) {
-			// 	Serial.print((int)data[i]);
-			// 	Serial.print(",");
-			// 	//Serial.write(data[i]);
-			// }
-			// Serial.println();
 		}
 	}
 };
@@ -40,7 +32,6 @@ class BLEServerCallbacksOverride: public BLEServerCallbacks {
 		restartAdvertising = true;
 	}
 	void onDisconnect(BLEServer* pServer) {
-		//digitalWrite(2, HIGH);
 		restartAdvertising = true;
 	}
 };
@@ -49,17 +40,10 @@ BLECharacteristicCallbacksOverride characteristicCallbacks;
 BLEServerCallbacksOverride serverCallbacks;
 BLEServer* bleServer = nullptr;
 
-//unsigned long timeSinceLastBlink = 0;
-//uint8_t lastLEDState = 0;
-
 void setup() {
 	Serial.begin(115200);
 	Serial.write(4);
 	Serial.write(API_LEVEL);
-
-	// pinMode(16, OUTPUT);
-	// pinMode(2, OUTPUT);
-	// digitalWrite(2, LOW);
 
 	char boardName[2 + sizeof(DISPLAY_NAME)];
 	snprintf(boardName, sizeof(boardName), "%s%s%d", DISPLAY_NAME, "@", API_LEVEL);
@@ -97,10 +81,4 @@ void loop() {
 		Serial.write(4);
 		Serial.write(API_LEVEL);
 	}
-
-	// if (millis() - timeSinceLastBlink >= 800) {
-	// 	lastLEDState = 1 - lastLEDState;
-	// 	digitalWrite(16, lastLEDState);
-	// 	timeSinceLastBlink = millis();
-	// }
 }

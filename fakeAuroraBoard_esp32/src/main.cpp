@@ -92,6 +92,12 @@ void loop() {
 		bleServer->startAdvertising();
 	}
 
+	// If the processing sketch pings us then we send it the API level.
+	if (Serial.available() > 0 && Serial.read() == 4) {
+		Serial.write(4);
+		Serial.write(API_LEVEL);
+	}
+
 	// if (millis() - timeSinceLastBlink >= 800) {
 	// 	lastLEDState = 1 - lastLEDState;
 	// 	digitalWrite(16, lastLEDState);

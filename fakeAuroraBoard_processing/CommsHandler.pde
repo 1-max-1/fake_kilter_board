@@ -14,8 +14,12 @@ public class CommsHandler {
   
   private final int BAUD_RATE = 115200;
   private Serial myPort;
+  
   private String currentPort;
   private String[] ports;
+  
+  // We send pings to the board to give us the API level - this represents the last time this was done.
+  private long timeOfLastAPILevelPing = 0;
   
   public CommsHandler() {
     refreshPorts();
@@ -64,12 +68,23 @@ public class CommsHandler {
     while (myPort.available() > 0) {
       if (currentState == BoardState.CONNECTING) {
         currentState = BoardState.CONNECTED;
-        return myPort.read();
+        
+        int apiLevel = myPort.read();
+        if (apiLevel < 1 || apiLevel > 9) // Make sure the API level is valid
+          apiLevel = -1;
+        return apiLevel;
       }
       // ESP32 will send a '4' just before it sends us the API level
       else if (myPort.read() == 4) {
         currentState = BoardState.CONNECTING;
       }
+    }
+    
+    // If we still haven't received by this point then the board didn't boot so send out a ping every 1s.
+    // It will know to send the API level once it receives a ping.
+    if (millis() - timeOfLastAPILevelPing > 1000) {
+      myPort.write(4);
+      timeOfLastAPILevelPing = millis();
     }
     
     return -1;

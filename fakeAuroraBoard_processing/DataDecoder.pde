@@ -14,17 +14,14 @@ class DataDecoder {
     }
   }
   
-  // TODO: make this better, instead of exiting return false so the user knows
   public void setAPILevel(int apiLevel) {
-    println("API Level: " + apiLevel);
     if (apiLevel < 1 || apiLevel > 9) {
-      println("Invalid API level!");
-      exit();
+      throw new RuntimeException("Invalid API level!");
     }
-    API_LEVEL = apiLevel; //<>//
+    API_LEVEL = apiLevel;
   }
   
-  public void newByteIn(int dataByte) {    
+  public void newByteIn(int dataByte) {     //<>//
     // If we are getting new bytes but we have already received all packets, then this is a new message so we need to RESET.
     if (allPacketsReceived) {
       allPacketsReceived = false;

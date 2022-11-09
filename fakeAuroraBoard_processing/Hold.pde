@@ -18,6 +18,6 @@ class Hold {
   
   public void Draw() {
     fill(r, g, b);
-    square(x * 40 + 30, 780 - (y * 40) - 40, 25);
+    square(x * 40 + 15, y * 40 + 25, 25);
   }
 };

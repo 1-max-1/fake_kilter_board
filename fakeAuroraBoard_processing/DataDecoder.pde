@@ -5,13 +5,11 @@ class DataDecoder {
   private boolean allPacketsReceived = false;
   
   private int API_LEVEL = 2;
-  private HashMap<Integer, int[]> positions = new HashMap<Integer, int[]>();
   
-  public void loadLEDPositions(String positionsFile) {
-    for(String line : loadStrings(positionsFile)) {
-      String[] data = line.split(",");
-      positions.put(Integer.valueOf(data[2]), new int[] {Integer.parseInt(data[0]), Integer.parseInt(data[1])});
-    }
+  private LEDPositionParser positionParser;
+  
+  public DataDecoder(PApplet parent) {
+    positionParser = new LEDPositionParser(parent);
   }
   
   public void setAPILevel(int apiLevel) {
@@ -21,7 +19,7 @@ class DataDecoder {
     API_LEVEL = apiLevel;
   }
   
-  public void newByteIn(int dataByte) {     //<>//
+  public void newByteIn(int dataByte) {    
     // If we are getting new bytes but we have already received all packets, then this is a new message so we need to RESET.
     if (allPacketsReceived) {
       allPacketsReceived = false;
@@ -85,7 +83,7 @@ class DataDecoder {
       for(int i = 5; i < currentPacketLength - 1; i += 2) {
         int position = currentPacket.get(i) + ((currentPacket.get(i + 1) & 0b11) << 8);
         int clr[] = scaledColorToFullColorV2(currentPacket.get(i + 1));
-        int coords[] = positions.get(position);
+        int coords[] = positionParser.getCoordsFromPosition(position);
         if (coords == null) continue; // Skip this hold if invalid
         Hold h = new Hold(coords[0], coords[1], clr[0], clr[1], clr[2]);
         currentPlacements.add(h);
@@ -96,7 +94,7 @@ class DataDecoder {
       for(int i = 5; i < currentPacketLength - 1; i += 3) {
         int position = (currentPacket.get(i + 1) << 8) + currentPacket.get(i);
         int clr[] = scaledColorToFullColorV3(currentPacket.get(i + 2));
-        int coords[] = positions.get(position);
+        int coords[] = positionParser.getCoordsFromPosition(position);
         if (coords == null) continue; // Skip this hold if invalid
         Hold h = new Hold(coords[0], coords[1], clr[0], clr[1], clr[2]);
         currentPlacements.add(h);

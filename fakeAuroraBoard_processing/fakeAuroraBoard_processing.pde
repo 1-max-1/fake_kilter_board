@@ -1,12 +1,12 @@
-DataDecoder decoder = new DataDecoder();
+DataDecoder decoder;
 CommsHandler comms = new CommsHandler();
 
 long timeOfLastPortCheck = 0;
 
 void setup() {
   size(700, 780);
+  decoder = new DataDecoder(this);
   drawCOMPorts();
-  decoder.loadLEDPositions(sketchPath() + "/../positions.txt");
 }
 
 // Draws all of the active COM ports on the screen with a number mapped to each of them.
